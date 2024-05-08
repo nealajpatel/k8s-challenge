@@ -1,5 +1,7 @@
 # K8s Challenge
 
+![CI](https://github.com/nealajpatel/k8s-challenge/actions/workflows/ci.yaml/badge.svg?branch=main&event=push)
+
 ## Pre-requisites
 
 - [Docker](https://docs.docker.com/desktop/install/mac-install/)

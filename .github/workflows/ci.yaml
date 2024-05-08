@@ -1,0 +1,60 @@
+name: Validate Deployment
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  plan:
+    name: Terraform Plan
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Format
+        run: terraform fmt -check
+
+      - name: Init
+        run: terraform init
+      
+      - name: Validate
+        run: terraform validate -no-color
+
+      - name: Plan
+        run: terraform plan -no-color
+        continue-on-error: true
+
+  validate:
+    name: Terraform Apply
+    needs: plan
+    permissions:
+      id-token: write
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Init
+        run: terraform init
+
+      - name: Apply
+        run: terraform apply -auto-approve
+      
+      - name: Validate
+        run: |
+          curl http://localhost/api/health/ping
+
+      - name: Destroy
+        run: terraform destroy -auto-approve
