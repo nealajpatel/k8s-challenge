@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+   name: api
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api
+  template:
+    metadata:
+      labels:
+        app: api
+    spec:
+      containers:
+      - name: api
+        image: ghcr.io/nealajpatel/golang-rest-api-starter:1
+        resources:
+          limits:
+            cpu: 250m
+            memory: 15.5Mi # 25Mi
+          requests:
+            cpu: 250m
+            memory: 15.5Mi # 25Mi
+        ports:
+        - containerPort: 8080
+          name: api
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: api-service
+  namespace: api
+spec:
+  selector:
+    app: api
+  ports:
+  - port: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-ingress
+  namespace: api
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+  - http:
+      paths:
+      - pathType: Prefix
+        path: /*(/|$)(.*) # /api(/|$)(.*)
+        backend:
+          service:
+            name: api-service
+            port:
+              number: 8080
